@@ -22,10 +22,10 @@ export default function Hero () {
                                 </p>
                             </a>
                             <h1 className="text-4xl text-white font-extrabold sm:text-5xl">
-                                Build your SaaS exactly how you want
+                                Travel. Have fun!
                             </h1>
                             <p>
-                                Sed ut perspiciatis unde omnis iste natus voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae.
+                            Discover the breathtaking beauty of Oman, where ancient history meets modern adventure. From the majestic peaks of the Hajar Mountains to the serene beaches of the Arabian Sea, explore a land rich in culture, natural wonders, and unforgettable experiences. Embark on your Omani journey today and uncover the hidden gems of this enchanting country.
                             </p>
                             <div className='flex items-center gap-x-3 sm:text-sm'>
                                 <a href="javascript:void(0)" className="flex items-center justify-center gap-x-1 py-2 px-4 font-medium bg-white duration-150 hover:bg-gray-800 active:bg-gray-900 text-indigo-500 rounded-full md:inline-flex">
