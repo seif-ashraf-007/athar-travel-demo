@@ -1,20 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Header() {
   const [state, setState] = useState(false);
-
   const navigation = [
-    { title: 'Travel', path: 'javascript:void(0)' },
-    { title: 'Blog', path: 'javascript:void(0)' },
-    { title: 'Contact us', path: 'javascript:void(0)' },
-    { title: 'About', path: 'javascript:void(0)' },
+    { title: 'Travel', path: '#travel' },
+    { title: 'Blog', path: '#blog' },
+    { title: 'Contact us', path: '#contact' },
+    { title: 'About', path: '#about' },
   ];
+
+  useEffect(() => {
+    const handleSmoothScroll = (e) => {
+      e.preventDefault();
+      const href = e.currentTarget.getAttribute('href');
+      const targetId = href.replace('#', '');
+      const elem = document.getElementById(targetId);
+      elem?.scrollIntoView({
+        behavior: 'smooth',
+      });
+      // Close mobile menu after clicking a link
+      setState(false);
+    };
+
+    const links = document.querySelectorAll('a[href^="#"]');
+    links.forEach(link => {
+      link.addEventListener('click', handleSmoothScroll);
+    });
+
+    return () => {
+      links.forEach(link => {
+        link.removeEventListener('click', handleSmoothScroll);
+      });
+    };
+  }, []);
 
   return (
     <nav className="bg-transparent w-full border-b md:border-0 md:static">
       <div className="items-center px-4 max-w-screen-xl mx-auto md:flex md:px-8">
         <div className="flex items-center justify-between py-3 md:py-5 md:block">
-          <a href="javascript:void(0)">
+          <a href="/">
             <img
               src="/logo.png"
               width={100}

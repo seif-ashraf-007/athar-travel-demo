@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { FaHeart, FaComment, FaShare, FaBookmark, FaSearch } from 'react-icons/fa';
+import { motion, useScroll } from 'framer-motion';
+import { FaHeart, FaComment, FaShare, FaBookmark, FaSearch, FaTwitter, FaFacebook, FaLinkedin } from 'react-icons/fa';
+import ReactPaginate from 'react-paginate';
 
 const blogPosts = [
   {
@@ -38,28 +39,113 @@ const blogPosts = [
   },
 ];
 
+function ReadingProgressBar() {
+  const { scrollYProgress } = useScroll();
+
+  return (
+    <motion.div
+      className="fixed top-0 left-0 right-0 h-1 bg-blue-500 origin-left"
+      style={{ scaleX: scrollYProgress }}
+    />
+  );
+}
+
+function SocialShare({ post }) {
+  const shareUrl = `https://yourblog.com/post/${post.id}`;
+
+  return (
+    <div className="flex space-x-2 mt-4">
+      <button className="p-2 bg-blue-400 text-white rounded-full">
+        <FaTwitter />
+      </button>
+      <button className="p-2 bg-blue-600 text-white rounded-full">
+        <FaFacebook />
+      </button>
+      <button className="p-2 bg-blue-800 text-white rounded-full">
+        <FaLinkedin />
+      </button>
+    </div>
+  );
+}
+
+function NewsletterSubscription() {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Basic email validation
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError('Please enter a valid email address.');
+      setSuccess('');
+      return;
+    }
+
+    // Implement newsletter subscription logic here
+    console.log('Subscribed:', email);
+    setEmail('');
+    setError('');
+    setSuccess('Thank you for subscribing!');
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-8 bg-gray-100 p-6 rounded-lg" >
+      <h3 className="text-xl font-bold mb-4">Subscribe to Our Newsletter</h3>
+      <div className="flex">
+        <input
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="flex-grow p-2 rounded-l-lg"
+          required
+        />
+        <button type="submit" className="bg-blue-500 text-white p-2 rounded-r-lg">
+          Subscribe
+        </button>
+      </div>
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {success && <p className="text-green-500 mt-2">{success}</p>}
+    </form>
+  );
+}
+
 function BlogPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [currentPage, setCurrentPage] = useState(0);
 
   const categories = ['All', 'Technology', 'Lifestyle', 'Wellness'];
+  const postsPerPage = 6;
 
-  const filteredPosts = blogPosts.filter(post => 
+  const filteredPosts = blogPosts.filter(post =>
     (selectedCategory === 'All' || post.category === selectedCategory) &&
     post.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const pageCount = Math.ceil(filteredPosts.length / postsPerPage);
+  const offset = currentPage * postsPerPage;
+  const currentPosts = filteredPosts.slice(offset, offset + postsPerPage);
+
+  const handlePageChange = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
   return (
-    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8" id='blog'>
+      <ReadingProgressBar />
       <motion.div
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         className="max-w-7xl mx-auto"
       >
-        <h1 className="text-5xl font-extrabold text-center text-gray-800 mb-12">
-          Our <span className="text-blue-500">Blog</span>
-        </h1>
+        <div className="flex justify-between items-center mb-12">
+          <h1 className="text-5xl font-extrabold text-gray-800">
+            Our <span className="text-blue-500">Blog</span>
+          </h1>
+        </div>
 
         <div className="mb-8 flex flex-wrap justify-between items-center">
           <div className="relative">
@@ -77,8 +163,8 @@ function BlogPage() {
               <button
                 key={category}
                 className={`px-4 py-2 rounded-full ${
-                  selectedCategory === category 
-                    ? 'bg-blue-500 text-white' 
+                  selectedCategory === category
+                    ? 'bg-blue-500 text-white'
                     : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 } transition duration-300`}
                 onClick={() => setSelectedCategory(category)}
@@ -90,7 +176,7 @@ function BlogPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredPosts.map((post) => (
+          {currentPosts.map((post) => (
             <motion.div
               key={post.id}
               initial={{ opacity: 0, scale: 0.9 }}
@@ -115,21 +201,28 @@ function BlogPage() {
                     <button className="text-yellow-500 hover:text-yellow-600"><FaBookmark /></button>
                   </div>
                 </div>
+                <SocialShare post={post} />
               </div>
             </motion.div>
           ))}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="text-center mt-12"
-        >
-          <button className="bg-blue-500 text-white px-6 py-3 rounded-full font-semibold text-lg hover:bg-blue-600 transition duration-300 shadow-lg hover:shadow-xl">
-            Load More Articles
-          </button>
-        </motion.div>
+        <ReactPaginate
+          previousLabel={'Previous'}
+          nextLabel={'Next'}
+          breakLabel={'...'}
+          pageCount={pageCount}
+          marginPagesDisplayed={2}
+          pageRangeDisplayed={5}
+          onPageChange={handlePageChange}
+          containerClassName={'pagination flex justify-center space-x-2 mt-8'}
+          pageClassName={'bg-gray-200 text-gray-800 px-3 py-1 rounded'}
+          activeClassName={'bg-blue-500 text-white'}
+          previousClassName={'bg-gray-200 text-gray-800 px-3 py-1 rounded'}
+          nextClassName={'bg-gray-200 text-gray-800 px-3 py-1 rounded'}
+        />
+
+        <NewsletterSubscription />
       </motion.div>
     </div>
   );
